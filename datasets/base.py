@@ -96,7 +96,11 @@ class AbstractDataset(metaclass=ABCMeta):
             download(self.url(), tmpzip)
             unzip(tmpzip, tmpfolder)
             if self.zip_file_content_is_folder():
-                tmpfolder = tmpfolder.joinpath(os.listdir(tmpfolder)[0])
+                if len(os.listdir(tmpfolder)) == 1:
+                # movielens unzip as a folder
+                # while oulad unzip as files directly
+                # thus only movielens need this line
+                    tmpfolder = tmpfolder.joinpath(os.listdir(tmpfolder)[0])
             shutil.move(tmpfolder, folder_path)
             shutil.rmtree(tmproot)
             print()

@@ -16,7 +16,7 @@ class OULADDataset(AbstractDataset):
 
     @classmethod
     def url(cls):
-        return None
+        return  'https://analyse.kmi.open.ac.uk/open_dataset/download'
 
     @classmethod
     def all_raw_file_names(cls):
