@@ -1,4 +1,11 @@
 def set_template(args):
+    if torch.cuda.is_available():
+        args.device = 'cuda'
+    # elif torch.backends.mps.is_available(): # few functions not implimented on mps device
+    #     args.device = 'mps'
+    else:
+        args.device = 'cpu'
+
     if args.template is None:
         return
     elif args.template.startswith('train_lsbert'):
@@ -25,7 +32,7 @@ def set_template(args):
         args.test_negative_sampling_seed = 98765
 
         args.trainer_code = 'bert'
-        args.device = 'cuda'
+        # args.device = 'cuda'
         args.num_gpu = 1
         args.device_idx = '0'
         args.optimizer = 'Adam'
@@ -71,7 +78,7 @@ def set_template(args):
         args.test_negative_sampling_seed = 98765
 
         args.trainer_code = 'bert'
-        args.device = 'cpu'
+        # args.device = 'cpu'
         args.num_gpu = 1
         args.device_idx = '0'
         args.optimizer = 'Adam'
@@ -111,7 +118,7 @@ def set_template(args):
         args.test_batch_size = batch
 
         args.trainer_code = 'dae'
-        args.device = 'cuda'
+        # args.device = 'cuda'
         args.num_gpu = 1
         args.device_idx = '0'
         args.optimizer = 'Adam'
@@ -147,7 +154,7 @@ def set_template(args):
         args.test_batch_size = batch
 
         args.trainer_code = 'vae'
-        args.device = 'cuda'
+        # args.device = 'cuda'
         args.num_gpu = 1
         args.device_idx = '0'
         args.optimizer = 'Adam'
