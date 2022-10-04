@@ -45,10 +45,12 @@ class BERTLSModel(BaseModel):
         emb = self.embedding(x)
 
         # passing through AutoEncoder
-        ae_output, ae_latent = torch.zeros(emb.shape).to(self.device), torch.zeros(emb.shape[0], emb.shape[1], self.ae.latent_dim).to(self.device)
-        # ae_output, ae_latent = self.ae(emb)
-
-        x = emb
+        batch_size = x.shape[0]
+        seq_len = x.shape[1]
+        ae_output, ae_latent = self.ae(emb.reshape(-1, emb.shape[-1]))
+        ae_output = ae_output.reshape(batch_size, seq_len, -1)
+        ae_latent = ae_latent.reshape(batch_size, seq_len, -1)
+        x = emb.reshape(batch_size, seq_len, -1)
         # running over multiple transformer blocks
         for transformer in self.transformer_blocks:
             x = transformer.forward(x, mask)

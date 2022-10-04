@@ -31,7 +31,7 @@ def set_template(args):
         args.train_negative_sampler_code = 'random'
         args.train_negative_sample_size = 0
         args.train_negative_sampling_seed = 0
-        args.test_negative_sampler_code = 'popular'
+        args.test_negative_sampler_code = 'random'
         args.test_negative_sample_size = 100
         args.test_negative_sampling_seed = 98765
 
@@ -80,7 +80,7 @@ def set_template(args):
         args.train_negative_sampler_code = 'random'
         args.train_negative_sample_size = 0
         args.train_negative_sampling_seed = 0
-        args.test_negative_sampler_code = 'popular'
+        args.test_negative_sampler_code = 'random'
         args.test_negative_sample_size = 100
         args.test_negative_sampling_seed = 98765
 
