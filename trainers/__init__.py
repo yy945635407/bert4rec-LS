@@ -1,10 +1,11 @@
 from .bert import BERTTrainer
 from .dae import DAETrainer
 from .vae import VAETrainer
-
+from .bertls import BERTLSTrainer
 
 TRAINERS = {
     BERTTrainer.code(): BERTTrainer,
+    BERTLSTrainer.code(): BERTLSTrainer,
     DAETrainer.code(): DAETrainer,
     VAETrainer.code(): VAETrainer
 }

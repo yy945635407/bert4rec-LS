@@ -8,7 +8,7 @@ class AutoEncoder(nn.Module):
         super(AutoEncoder, self).__init__()
         self.args = args
         self.input_dim = args.ae_input_dim
-        self.output_dim = self.ae_input_dim
+        self.output_dim = self.input_dim
         self.hidden_dims = args.ae_hidden_dims
         self.hidden_dims.append(args.ae_latent_dim)
         self.dims_list = (args.ae_hidden_dims +
@@ -79,8 +79,7 @@ class AutoEncoder(nn.Module):
     def __str__(self):
         return self.__repr__()
 
-    def forward(self, X, latent=False):
-        output = self.encoder(X)
-        if latent:
-            return output
-        return self.decoder(output)
+    def forward(self, X):
+        # return decoder output and latent vector
+        latent = self.encoder(X)
+        return self.decoder(latent), latent
