@@ -15,6 +15,7 @@ def set_template(args):
         args.rated = False
 
         args.n_clusters = 2
+        args.num_epochs_pretrain = 1
 
         args.dataset_code = 'oulad'
         args.min_rating = 0

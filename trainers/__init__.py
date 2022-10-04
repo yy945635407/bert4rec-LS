@@ -1,7 +1,7 @@
 from .bert import BERTTrainer
 from .dae import DAETrainer
 from .vae import VAETrainer
-from .bertls import BERTLSTrainer
+from .bert_ls import BERTLSTrainer
 
 TRAINERS = {
     BERTTrainer.code(): BERTTrainer,

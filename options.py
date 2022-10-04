@@ -57,6 +57,11 @@ parser.add_argument('--test_negative_sampling_seed', type=int, default=None)
 # Trainer
 ################
 parser.add_argument('--trainer_code', type=str, default='bert', choices=TRAINERS.keys())
+# pre-training
+parser.add_argument('--num_epochs_pretrain', type=int, default=0, \
+                    help='Number of epochs for pretraining, 0 represents no pretraining')
+parser.add_argument('--n-jobs', type=int, default=1,
+                        help='number of jobs to run in parallel')
 # device #
 parser.add_argument('--device', type=str, default='mps', choices=['cpu', 'cuda'])
 parser.add_argument('--num_gpu', type=int, default=1)

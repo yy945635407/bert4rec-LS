@@ -4,6 +4,7 @@ from models.bert_modules.embedding import BERTEmbedding
 from models.bert_modules.transformer import TransformerBlock
 from utils import fix_random_seed_as
 from .ae import AutoEncoder
+from .kmeans import batch_KMeans
 import torch
 
 class BERTLSModel(BaseModel):
@@ -32,7 +33,11 @@ class BERTLSModel(BaseModel):
 
         self.out = nn.Linear(hidden, args.num_items + 1)
 
+        # Autoencoder to reconstruct bert input embedding
         self.ae = AutoEncoder(args)
+
+        # kmeans for ae latent vector clustering 
+        self.kmeans = batch_KMeans(args)
 
     @classmethod
     def code(cls):
@@ -47,10 +52,13 @@ class BERTLSModel(BaseModel):
         # passing through AutoEncoder
         batch_size = x.shape[0]
         seq_len = x.shape[1]
+        # reshape before passed to AE
         ae_output, ae_latent = self.ae(emb.reshape(-1, emb.shape[-1]))
+        # reshape back
         ae_output = ae_output.reshape(batch_size, seq_len, -1)
         ae_latent = ae_latent.reshape(batch_size, seq_len, -1)
-        x = emb.reshape(batch_size, seq_len, -1)
+
+        x = emb
         # running over multiple transformer blocks
         for transformer in self.transformer_blocks:
             x = transformer.forward(x, mask)

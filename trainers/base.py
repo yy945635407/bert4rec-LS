@@ -75,7 +75,7 @@ class AbstractTrainer(metaclass=ABCMeta):
         })
         self.writer.close()
 
-    def train_one_epoch(self, epoch, accum_iter):
+    def train_one_epoch(self, epoch, accum_iter, pretrain=False):
         self.model.train()
         if self.args.enable_lr_schedule:
             self.lr_scheduler.step()
@@ -88,7 +88,10 @@ class AbstractTrainer(metaclass=ABCMeta):
             batch = [x.to(self.device) for x in batch]
 
             self.optimizer.zero_grad()
-            loss = self.calculate_loss(batch)
+            if pretrain:
+                loss = self.calculate_loss(batch, pretrain)
+            else:
+                loss = self.calculate_loss(batch)
             loss.backward()
 
             self.optimizer.step()
