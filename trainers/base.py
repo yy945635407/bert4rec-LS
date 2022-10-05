@@ -31,6 +31,7 @@ class AbstractTrainer(metaclass=ABCMeta):
 
         self.num_epochs = args.num_epochs
         self.metric_ks = args.metric_ks
+        self.loss_names = args.loss_names
         self.best_metric = args.best_metric
 
         self.export_root = export_root
@@ -98,14 +99,14 @@ class AbstractTrainer(metaclass=ABCMeta):
             self.optimizer.step()
 
             loss_descrip_str = 'Epoch {}'
-            loss_avgs = []
+            # loss_avgs = []
             for loss_name, loss_val in losses.items():
                 average_meter_set.update(loss_name, loss_val.item())
                 loss_descrip_str += ', ' + loss_name + ' {:.3f}'
-                loss_avgs.append(average_meter_set[loss_name].avg)
+                # loss_avgs.append(average_meter_set[loss_name].avg)
 
             tqdm_dataloader.set_description(
-                loss_descrip_str.format(epoch+1, *loss_avgs))
+                loss_descrip_str.format(epoch+1, *average_meter_set.averages().values()))
             
             # average_meter_set.update('loss', loss.item())
 
@@ -201,10 +202,18 @@ class AbstractTrainer(metaclass=ABCMeta):
         writer = SummaryWriter(root.joinpath('logs'))
         model_checkpoint = root.joinpath('models')
 
+        # train_loggers = [
+        #     MetricGraphPrinter(writer, key='epoch', graph_name='Epoch', group_name='Train'),
+        #     MetricGraphPrinter(writer, key='loss', graph_name='Loss', group_name='Train'),
+        # ]
+        # add other losses's loggers
+        # need args.losse_names
         train_loggers = [
             MetricGraphPrinter(writer, key='epoch', graph_name='Epoch', group_name='Train'),
-            MetricGraphPrinter(writer, key='loss', graph_name='Loss', group_name='Train'),
         ]
+        for loss_name in self.loss_names:
+            train_loggers.append(
+                MetricGraphPrinter(writer, key=loss_name, graph_name=loss_name, group_name='Train'))
 
         val_loggers = []
         for k in self.metric_ks:

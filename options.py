@@ -78,6 +78,7 @@ parser.add_argument('--gamma', type=float, default=0.1, help='Gamma for StepLR')
 parser.add_argument('--num_epochs', type=int, default=100, help='Number of epochs for training')
 # logger #
 parser.add_argument('--log_period_as_iter', type=int, default=12800)
+parser.add_argument('--loss_names', nargs='+', type=str, default=['loss'], help='names of losses for model')
 # evaluation #
 parser.add_argument('--metric_ks', nargs='+', type=int, default=[10, 20, 50], help='ks for Metric@k')
 parser.add_argument('--best_metric', type=str, default='NDCG@10', help='Metric for determining the best model')

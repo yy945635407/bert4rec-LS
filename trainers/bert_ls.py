@@ -74,7 +74,7 @@ class BERTLSTrainer(AbstractTrainer):
             rec_loss = self.mse(emb, rec_emb) # reconstruction loss
             
             loss = bert_loss + rec_loss
-            return {'loss': loss, 'bert_loss': bert_loss\
+            return {'loss': loss, 'bert_loss': bert_loss, \
                     'rec_loss': rec_loss}
         else:
             seqs, labels = batch

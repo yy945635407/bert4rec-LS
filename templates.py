@@ -13,10 +13,12 @@ def set_template(args):
     elif args.template.startswith('train_bertls_clustered'):
         args.mode = 'train'
         args.rated = False
+        args.loss_names = ['loss', 'bert_loss', 'rec_loss', 'cluster_loss']
 
         args.n_clusters = 2
         args.num_epochs_pretrain = 1
         args.num_epochs = 1
+
 
         args.dataset_code = 'oulad'
         args.min_rating = 0
