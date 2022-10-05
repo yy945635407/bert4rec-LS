@@ -16,6 +16,7 @@ def set_template(args):
 
         args.n_clusters = 2
         args.num_epochs_pretrain = 1
+        args.num_epochs = 1
 
         args.dataset_code = 'oulad'
         args.min_rating = 0
@@ -44,7 +45,6 @@ def set_template(args):
         args.enable_lr_schedule = True
         args.decay_step = 25
         args.gamma = 1.0
-        args.num_epochs = 20
         args.metric_ks = [1, 5, 10, 20, 50, 100]
         args.best_metric = 'NDCG@10'
 

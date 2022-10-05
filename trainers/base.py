@@ -89,16 +89,28 @@ class AbstractTrainer(metaclass=ABCMeta):
 
             self.optimizer.zero_grad()
             if pretrain:
-                loss = self.calculate_loss(batch, pretrain)
+                losses = self.calculate_loss(batch, pretrain)
             else:
-                loss = self.calculate_loss(batch)
+                losses = self.calculate_loss(batch)
+            loss = losses['loss']
             loss.backward()
 
             self.optimizer.step()
 
-            average_meter_set.update('loss', loss.item())
+            loss_descrip_str = 'Epoch {}'
+            loss_avgs = []
+            for loss_name, loss_val in losses.items():
+                average_meter_set.update(loss_name, loss_val.item())
+                loss_descrip_str += ', ' + loss_name + ' {:.3f}'
+                loss_avgs.append(average_meter_set[loss_name].avg)
+
             tqdm_dataloader.set_description(
-                'Epoch {}, loss {:.3f} '.format(epoch+1, average_meter_set['loss'].avg))
+                loss_descrip_str.format(epoch+1, *loss_avgs))
+            
+            # average_meter_set.update('loss', loss.item())
+
+            # tqdm_dataloader.set_description(
+            #     'Epoch {}, loss {:.3f} '.format(epoch+1, average_meter_set['loss'].avg))
 
             accum_iter += batch_size
 

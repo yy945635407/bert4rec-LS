@@ -74,7 +74,8 @@ class BERTLSTrainer(AbstractTrainer):
             rec_loss = self.mse(emb, rec_emb) # reconstruction loss
             
             loss = bert_loss + rec_loss
-            return loss
+            return {'loss': loss, 'bert_loss': bert_loss\
+                    'rec_loss': rec_loss}
         else:
             seqs, labels = batch
             logits, emb, latent, rec_emb = self.model(seqs)  # B x T x V
@@ -113,7 +114,8 @@ class BERTLSTrainer(AbstractTrainer):
                 cluster_loss += torch.squeeze(sample_cluster_loss)
                 
             loss = bert_loss + rec_loss + cluster_loss
-            return loss
+            return {'loss': loss, 'bert_loss': bert_loss, \
+                    'rec_loss': rec_loss, 'cluster_loss': cluster_loss}
 
     def calculate_metrics(self, batch):
         seqs, candidates, labels = batch
