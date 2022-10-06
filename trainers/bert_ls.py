@@ -94,7 +94,7 @@ class BERTLSTrainer(AbstractTrainer):
             # [Step-1] Update the assignment results
             cluster_id = self.model.kmeans.update_assign(latent_X)
 
-            # [Step-2] Update clusters in bath Kmeans
+            # [Step-2] Update clusters in batch Kmeans
             elem_count = np.bincount(cluster_id,
                                      minlength=self.args.n_clusters)
             for k in range(self.args.n_clusters):

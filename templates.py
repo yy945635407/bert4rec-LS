@@ -17,7 +17,7 @@ def set_template(args):
 
         args.n_clusters = 2
         args.num_epochs_pretrain = 1
-        args.num_epochs = 1
+        args.num_epochs = 20
 
 
         args.dataset_code = 'oulad'
