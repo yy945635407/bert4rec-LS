@@ -45,7 +45,7 @@ def set_template(args):
         args.trainer_code = 'bert_ls'
         args.num_gpu = 1
         args.device_idx = '0'
-        args.optimizer = 'Adam'
+        args.optimizer = 'Adam' # sgd can't work
         args.lr = 0.001
         args.enable_lr_schedule = True
         args.decay_step = 25
