@@ -14,9 +14,11 @@ def set_template(args):
         args.mode = 'train'
         args.rated = False
         args.loss_names = ['loss', 'bert_loss', 'rec_loss', 'cluster_loss']
-        args.drop_dup = True
+        # whether to drop duplicated records(same student, same resource, same timestamp) in oulad dataset 
+        # delete dir Data/preprocessed/ouladxxx to make this option work
+        args.drop_dup = False 
 
-        args.n_clusters = 2
+        args.n_clusters = 4
         args.num_epochs_pretrain = 1
         args.num_epochs = 20
 
