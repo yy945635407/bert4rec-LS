@@ -6,6 +6,9 @@ from datetime import date
 
 
 class OULADDataset(AbstractDataset):
+    def __init__(self, args):
+        super().__init__(args)
+        self.drop_dup = args.drop_dup
     @classmethod
     def code(cls):
         return 'oulad'
@@ -34,6 +37,8 @@ class OULADDataset(AbstractDataset):
         df = pd.read_csv(file_path)
         df.columns = ['code_module', 'code_presentation', 'uid', 'sid', 'timestamp',
        'rating']
+        if self.drop_dup:
+            df = df.drop_duplicates(subset=['uid', 'sid', 'timestamp'])
         return df
 
 

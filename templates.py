@@ -14,6 +14,7 @@ def set_template(args):
         args.mode = 'train'
         args.rated = False
         args.loss_names = ['loss', 'bert_loss', 'rec_loss', 'cluster_loss']
+        args.drop_dup = True
 
         args.n_clusters = 2
         args.num_epochs_pretrain = 1
