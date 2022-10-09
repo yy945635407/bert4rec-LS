@@ -38,6 +38,7 @@ class OULADDataset(AbstractDataset):
         df.columns = ['code_module', 'code_presentation', 'uid', 'sid', 'timestamp',
        'rating']
         if self.drop_dup:
+            # whether to drop duplicates at same timestamp
             df = df.drop_duplicates(subset=['uid', 'sid', 'timestamp'])
         return df
 

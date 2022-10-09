@@ -23,7 +23,7 @@ class AbstractDataset(metaclass=ABCMeta):
         self.split = args.split
 
         if args.rated:
-            # 数据是评分才设定最低评分数
+            # use min_uc if rated
             assert self.min_uc >= 2, 'Need at least 2 ratings per user for validation and test'
     @classmethod
     @abstractmethod
@@ -143,7 +143,7 @@ class AbstractDataset(metaclass=ABCMeta):
 
     def split_df(self, df, user_count):
         if self.args.split == 'leave_one_out':
-        # 每个用户的倒数第一个访问记录做test,倒数第二个做valid, 其余用作train
+        # For each user, his/her last item as test, the previous one as train
             print('Splitting')
             user_group = df.groupby('uid')
             user2items = user_group.progress_apply(lambda d: list(d.sort_values(by='timestamp')['sid']))
