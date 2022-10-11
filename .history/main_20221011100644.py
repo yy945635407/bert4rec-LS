@@ -17,6 +17,8 @@ def train():
     test_model = (input('Test model with test dataset? y/[n]: ') == 'y')
     if test_model:
         trainer.test()
+# test on mba
+# test2 on mba
 
 if __name__ == '__main__':
     if args.mode == 'train':

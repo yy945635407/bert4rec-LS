@@ -18,6 +18,7 @@ def train():
     if test_model:
         trainer.test()
 
+
 if __name__ == '__main__':
     if args.mode == 'train':
         train()
