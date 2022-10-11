@@ -14,6 +14,7 @@ def train():
     trainer = trainer_factory(args, model, train_loader, val_loader, test_loader, export_root)
     trainer.train()
 
+    # push test
     trainer.get_train_ch()
     test_model = (input('Test model with test dataset? y/[n]: ') == 'y')
     if test_model:
