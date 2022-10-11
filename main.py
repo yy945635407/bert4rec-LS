@@ -5,7 +5,18 @@ from models import model_factory
 from dataloaders import dataloader_factory
 from trainers import trainer_factory
 from utils import *
+import requests
 
+def send2vx(content, token="14bebffbc348", title="bert4rec", name="bert4rec_chscore"):
+    resp = requests.post("https://www.autodl.com/api/v1/wechat/message/push",
+                        json={
+                            "token": token,
+                            "title": title,
+                            "name": name,
+                            "content": content
+                        })
+    print(resp.content.decode())
+    return
 
 def train():
     export_root = setup_train(args)
@@ -15,7 +26,8 @@ def train():
     trainer.train()
 
     # push test
-    trainer.get_train_ch()
+    ch_score = trainer.get_train_ch()
+    send2vx("chscore=" + str(ch_score))
     test_model = (input('Test model with test dataset? y/[n]: ') == 'y')
     if test_model:
         trainer.test()

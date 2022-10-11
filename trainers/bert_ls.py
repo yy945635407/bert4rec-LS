@@ -92,13 +92,13 @@ class BERTLSTrainer(AbstractTrainer):
             # Get the latent features
             with torch.no_grad():
                 _, _, latent_X, _ = self.model(seqs)
-                latent_X = latent_X.cpu().numpy().reshape(-1, latent_X.shape[-1])
+                latent_X = latent_X.reshape(-1, latent_X.shape[-1])
 
             # [Step-1] Update the assignment results
             cluster_id = self.model.kmeans.update_assign(latent_X)
 
             # [Step-2] Update clusters in batch Kmeans
-            elem_count = np.bincount(cluster_id,
+            elem_count = torch.bincount(cluster_id,
                                      minlength=self.args.n_clusters)
             for k in range(self.args.n_clusters):
                 # avoid empty slicing
@@ -109,7 +109,7 @@ class BERTLSTrainer(AbstractTrainer):
             # Regularization term on clustering
             batch_size = seqs.shape[0]
             cluster_loss = torch.tensor(0.).to(self.device)
-            clusters = torch.FloatTensor(self.model.kmeans.clusters).to(self.device)
+            clusters = self.model.kmeans.clusters
             for i in range(batch_size):
                 diff_vec = latent[i] - clusters[cluster_id[i]]
                 sample_cluster_loss = torch.matmul(diff_vec.view(1, -1),
@@ -131,12 +131,13 @@ class BERTLSTrainer(AbstractTrainer):
         return metrics
 
     def calculate_ch(self, batch):
-        seqs, _, _ = batch
+        seqs, _ = batch
         _, _, latent, _ = self.model(seqs)  # B x T x V
         metrics = {}
         # add ch index
-        latent = latent.reshape(-1, latent.shape[-1]).cpu().numpy()
-        clusters = self.model.kmeans.update_assign(latent)
+        latent = latent.reshape(-1, latent.shape[-1])
+        clusters = self.model.kmeans.update_assign(latent).cpu().numpy()
+        latent = latent.cpu().numpy()
         if np.count_nonzero(clusters) >= 1:
             metrics['chscore'] = calinski_harabasz_score(latent, clusters)
         return metrics
@@ -162,10 +163,11 @@ class BERTLSTrainer(AbstractTrainer):
                     average_meter_set.update(k, v)
                 description = ""
                 if 'chscore' in metrics:
-                    description += " CH score{:.3f}".format(metrics['chscore'])
+                    description += " CH score {:.3f}".format(metrics['chscore'])
                 tqdm_dataloader.set_description(description)
 
             average_metrics = average_meter_set.averages()
             with open(os.path.join(self.export_root, 'logs', 'test_metrics.json'), 'w') as f:
                 json.dump(average_metrics, f, indent=4)
             print(average_metrics)
+        return average_metrics['chscore']
