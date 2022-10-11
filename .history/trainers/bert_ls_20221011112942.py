@@ -126,9 +126,7 @@ class BERTLSTrainer(AbstractTrainer):
 
         metrics = recalls_and_ndcgs_for_ks(scores, labels, self.metric_ks)
 
-        # add ch index
         latent = latent.reshape(-1, latent.shape[-1]).cpu().numpy()
         clusters = self.model.kmeans.update_assign(latent)
-        if np.count_nonzero(clusters) >= 1:
-            metrics['chscore'] = calinski_harabasz_score(latent, clusters)
+        metrics['chscore'] = calinski_harabasz_score(latent, clusters)
         return metrics
