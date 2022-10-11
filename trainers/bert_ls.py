@@ -130,14 +130,10 @@ class BERTLSTrainer(AbstractTrainer):
 
         return metrics
 
-    def calculate_metrics_with_ch(self, batch):
-        seqs, candidates, labels = batch
-        scores, emb, latent, rec_emb = self.model(seqs)  # B x T x V
-        scores = scores[:, -1, :]  # B x V
-        scores = scores.gather(1, candidates)  # B x C
-
-        metrics = recalls_and_ndcgs_for_ks(scores, labels, self.metric_ks)
-
+    def calculate_ch(self, batch):
+        seqs, _, _ = batch
+        _, _, latent, _ = self.model(seqs)  # B x T x V
+        metrics = {}
         # add ch index
         latent = latent.reshape(-1, latent.shape[-1]).cpu().numpy()
         clusters = self.model.kmeans.update_assign(latent)
@@ -160,15 +156,11 @@ class BERTLSTrainer(AbstractTrainer):
             for batch_idx, batch in enumerate(tqdm_dataloader):
                 batch = [x.to(self.device) for x in batch]
 
-                metrics = self.calculate_metrics(batch)
+                metrics = self.calculate_ch(batch)
 
                 for k, v in metrics.items():
                     average_meter_set.update(k, v)
-                description_metrics = ['NDCG@%d' % k for k in self.metric_ks[:3]] +\
-                                      ['Recall@%d' % k for k in self.metric_ks[:3]]
-                description = 'Val: ' + ', '.join(s + ' {:.3f}' for s in description_metrics)
-                description = description.replace('NDCG', 'N').replace('Recall', 'R')
-                description = description.format(*(average_meter_set[k].avg for k in description_metrics))
+                description = ""
                 if 'chscore' in metrics:
                     description += " CH score{:.3f}".format(metrics['chscore'])
                 tqdm_dataloader.set_description(description)
