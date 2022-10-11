@@ -20,7 +20,7 @@ def set_template(args):
 
         args.n_clusters = 4
         args.num_epochs_pretrain = 1
-        args.num_epochs = 20
+        args.num_epochs = 2 # test on autoDL
 
 
         args.dataset_code = 'oulad'
