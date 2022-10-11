@@ -146,7 +146,6 @@ class BERTLSTrainer(AbstractTrainer):
         return metrics
 
     def get_train_ch(self):
-        # get metrics with ch score on train set
         print('Test best model with test set!')
 
         best_model = torch.load(os.path.join(self.export_root, 'models', 'best_acc_model.pth')).get('model_state_dict')
@@ -156,7 +155,7 @@ class BERTLSTrainer(AbstractTrainer):
         average_meter_set = AverageMeterSet()
 
         with torch.no_grad():
-            tqdm_dataloader = tqdm(self.train_loader)
+            tqdm_dataloader = tqdm(self.test_loader)
             for batch_idx, batch in enumerate(tqdm_dataloader):
                 batch = [x.to(self.device) for x in batch]
 

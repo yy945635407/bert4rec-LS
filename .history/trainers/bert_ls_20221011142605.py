@@ -146,7 +146,7 @@ class BERTLSTrainer(AbstractTrainer):
         return metrics
 
     def get_train_ch(self):
-        # get metrics with ch score on train set
+        # get metrics with ch score in train set
         print('Test best model with test set!')
 
         best_model = torch.load(os.path.join(self.export_root, 'models', 'best_acc_model.pth')).get('model_state_dict')
