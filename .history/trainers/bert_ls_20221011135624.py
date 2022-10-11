@@ -6,8 +6,6 @@ from tqdm import tqdm
 from utils import AverageMeterSet
 import torch
 from sklearn.metrics import calinski_harabasz_score
-import os
-import json
 
 class BERTLSTrainer(AbstractTrainer):
     def __init__(self, args, model, train_loader, val_loader, test_loader, export_root):
@@ -129,51 +127,3 @@ class BERTLSTrainer(AbstractTrainer):
         metrics = recalls_and_ndcgs_for_ks(scores, labels, self.metric_ks)
 
         return metrics
-
-    def calculate_metrics_with_ch(self, batch):
-        seqs, candidates, labels = batch
-        scores, emb, latent, rec_emb = self.model(seqs)  # B x T x V
-        scores = scores[:, -1, :]  # B x V
-        scores = scores.gather(1, candidates)  # B x C
-
-        metrics = recalls_and_ndcgs_for_ks(scores, labels, self.metric_ks)
-
-        # add ch index
-        latent = latent.reshape(-1, latent.shape[-1]).cpu().numpy()
-        clusters = self.model.kmeans.update_assign(latent)
-        if np.count_nonzero(clusters) >= 1:
-            metrics['chscore'] = calinski_harabasz_score(latent, clusters)
-        return metrics
-
-    def get_train_ch(self):
-        # get metrics with ch score on train set
-        print('Test best model with test set!')
-
-        best_model = torch.load(os.path.join(self.export_root, 'models', 'best_acc_model.pth')).get('model_state_dict')
-        self.model.load_state_dict(best_model)
-        self.model.eval()
-
-        average_meter_set = AverageMeterSet()
-
-        with torch.no_grad():
-            tqdm_dataloader = tqdm(self.train_loader)
-            for batch_idx, batch in enumerate(tqdm_dataloader):
-                batch = [x.to(self.device) for x in batch]
-
-                metrics = self.calculate_metrics(batch)
-
-                for k, v in metrics.items():
-                    average_meter_set.update(k, v)
-                description_metrics = ['NDCG@%d' % k for k in self.metric_ks[:3]] +\
-                                      ['Recall@%d' % k for k in self.metric_ks[:3]]
-                description = 'Val: ' + ', '.join(s + ' {:.3f}' for s in description_metrics)
-                description = description.replace('NDCG', 'N').replace('Recall', 'R')
-                description = description.format(*(average_meter_set[k].avg for k in description_metrics))
-                if 'chscore' in metrics:
-                    description += " CH score{:.3f}".format(metrics['chscore'])
-                tqdm_dataloader.set_description(description)
-
-            average_metrics = average_meter_set.averages()
-            with open(os.path.join(self.export_root, 'logs', 'test_metrics.json'), 'w') as f:
-                json.dump(average_metrics, f, indent=4)
-            print(average_metrics)
