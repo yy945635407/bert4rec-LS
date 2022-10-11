@@ -28,7 +28,7 @@ def train():
     # push test
     ch_score = trainer.get_train_ch()
     send2vx("chscore=" + str(ch_score))
-    test_model = (input('Test model with test dataset? y/[n]: ') == 'y')
+    test_model = True #(input('Test model with test dataset? y/[n]: ') == 'y')
     if test_model:
         trainer.test()
 
