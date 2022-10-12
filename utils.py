@@ -12,7 +12,6 @@ import torch
 import torch.backends.cudnn as cudnn
 from torch import optim as optim
 
-
 def setup_train(args):
     set_up_gpu(args)
 

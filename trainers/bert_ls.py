@@ -1,3 +1,4 @@
+from turtle import color
 from .base import AbstractTrainer
 from .utils import recalls_and_ndcgs_for_ks
 import numpy as np
@@ -8,6 +9,10 @@ import torch
 from sklearn.metrics import calinski_harabasz_score
 import os
 import json
+from torch.utils.tensorboard import SummaryWriter
+from pathlib import Path
+from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
 
 class BERTLSTrainer(AbstractTrainer):
     def __init__(self, args, model, train_loader, val_loader, test_loader, export_root):
@@ -15,6 +20,9 @@ class BERTLSTrainer(AbstractTrainer):
         self.ce = nn.CrossEntropyLoss(ignore_index=0)
         self.mse = nn.MSELoss()
         self.num_epochs_pretrain = args.num_epochs_pretrain
+        
+        root = Path(self.export_root)
+        self.writer = SummaryWriter(root.joinpath('logs'))
 
     @classmethod
     def code(cls):
@@ -139,7 +147,22 @@ class BERTLSTrainer(AbstractTrainer):
         latent = latent.cpu().numpy()
         if np.count_nonzero(clusters) >= 1:
             metrics['chscore'] = calinski_harabasz_score(latent, clusters)
-        return metrics
+        return metrics, latent, clusters
+
+    def plot_clusters(self, x, y, ch):
+        pca = PCA(n_components=2)
+        x_2d = pca.fit_transform(x)
+        fig, ax = plt.subplots()
+        ax.scatter(x[:, 0], x[:, 1], marker='o', c=y, cmap='coolwarm')
+        ax.set_xlabel('dim1')
+        ax.set_ylabel('dim2')
+        ax.set_title('dimension reduction of clusters, ch_score:{}'.format(ch))
+        self.writer.add_figure('clusters visualization', 
+                                fig, 
+                                global_step=None, 
+                                close=False, 
+                                walltime=None)
+
 
     def get_train_ch(self):
         # get metrics with ch score on train set
@@ -150,13 +173,23 @@ class BERTLSTrainer(AbstractTrainer):
         self.model.eval()
 
         average_meter_set = AverageMeterSet()
-
+        train_x = []
+        train_y = []
         with torch.no_grad():
             tqdm_dataloader = tqdm(self.train_loader)
             for batch_idx, batch in enumerate(tqdm_dataloader):
                 batch = [x.to(self.device) for x in batch]
 
-                metrics = self.calculate_ch(batch)
+                metrics, batch_x, batch_y = self.calculate_ch(batch)
+
+                # if len(train_x) == 0 and len(train_y) == 0:
+                #     train_x = np.array(batch_x)
+                #     train_y = np.array(batch_y)
+                # else:
+                #     train_x = np.concatenate([train_x, batch_x], axis=0)
+                #     train_y = np.concatenate([train_y, batch_y], axis=0)
+                train_x.append(batch_x)
+                train_y.append(batch_y)
 
                 for k, v in metrics.items():
                     average_meter_set.update(k, v)
@@ -169,4 +202,10 @@ class BERTLSTrainer(AbstractTrainer):
             with open(os.path.join(self.export_root, 'logs', 'test_metrics.json'), 'w') as f:
                 json.dump(average_metrics, f, indent=4)
             print(average_metrics)
+        train_x = np.concatenate(train_x, axis=0)
+        train_y = np.concatenate(train_y, axis=0)
+    
+        self.plot_clusters(train_x, train_y, average_metrics['chscore'])
+        # log to tensorboard
+        self.writer.add_text('cluster', 'ch_score {}'.format(average_metrics['chscore']))
         return average_metrics['chscore']

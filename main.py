@@ -8,6 +8,8 @@ from utils import *
 import requests
 
 def send2vx(content, token="14bebffbc348", title="bert4rec", name="bert4rec_chscore"):
+    # used for sending message to wechat server
+    # see https://www.autodl.com/docs/msg/
     resp = requests.post("https://www.autodl.com/api/v1/wechat/message/push",
                         json={
                             "token": token,
@@ -25,9 +27,10 @@ def train():
     trainer = trainer_factory(args, model, train_loader, val_loader, test_loader, export_root)
     trainer.train()
 
-    # push test
-    ch_score = trainer.get_train_ch()
-    send2vx("chscore=" + str(ch_score))
+    if args.template.startswith('train_bertls_clustered'):
+        # push tests
+        ch_score = trainer.get_train_ch()
+        send2vx("n_cluster: {} n_epochs: {} chscore: {}".format(args.n_clusters, args.num_epochs, ch_score))
     test_model = True #(input('Test model with test dataset? y/[n]: ') == 'y')
     if test_model:
         trainer.test()
