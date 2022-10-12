@@ -115,7 +115,6 @@ class BERTLSTrainer(AbstractTrainer):
                 sample_cluster_loss = torch.matmul(diff_vec.view(1, -1),
                                                 diff_vec.view(-1, 1))
                 cluster_loss += torch.squeeze(sample_cluster_loss)
-                
             loss = bert_loss + rec_loss + cluster_loss
             return {'loss': loss, 'bert_loss': bert_loss, \
                     'rec_loss': rec_loss, 'cluster_loss': cluster_loss}

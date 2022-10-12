@@ -40,13 +40,15 @@ class batch_KMeans(object):
 
     def update_cluster(self, X, cluster_idx):
         """ Update clusters in Kmeans on a batch of data """
-        n_samples = X.shape[0]
-        for i in range(n_samples):
-            self.count[cluster_idx] += 1
-            eta = 1.0 / self.count[cluster_idx]
-            updated_cluster = ((1 - eta) * self.clusters[cluster_idx] +
-                               eta * X[i])
-            self.clusters[cluster_idx] = updated_cluster
+        # n_samples = X.shape[0]
+        # for i in range(n_samples):
+        #     self.count[cluster_idx] += 1
+        #     eta = 1.0 / self.count[cluster_idx]
+        #     updated_cluster = ((1 - eta) * self.clusters[cluster_idx] +
+        #                        eta * X[i])
+        #     self.clusters[cluster_idx] = updated_cluster
+        n = X.shape[0]
+        self.clusters[cluster_idx] = 1 / (n + 1) * (self.clusters[cluster_idx] + X.sum(0))
 
     def update_assign(self, X):
         """ Assign samples in `X` to clusters """
