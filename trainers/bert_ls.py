@@ -1,3 +1,4 @@
+from cProfile import label
 from turtle import color
 from .base import AbstractTrainer
 from .utils import recalls_and_ndcgs_for_ks
@@ -158,12 +159,23 @@ class BERTLSTrainer(AbstractTrainer):
     def plot_clusters(self, x, y, ch):
         pca = PCA(n_components=2)
         x_2d = pca.fit_transform(x)
+        labels = ['cluster {}'.format(i+1) for i in y]
+        used_colors = []
         fig, ax = plt.subplots()
-        ax.scatter(x[:, 0], x[:, 1], marker='o', c=y, cmap='coolwarm')
+        for cluster in range(self.args.n_clusters):
+            x_index = y == cluster
+            x_c = x[x_index]
+            color = (np.random.rand(), np.random.rand(), np.random.rand())
+            while color in used_colors:
+                color = (np.random.rand(), np.random.rand(), np.random.rand())
+            used_colors.append(color)
+            ax.scatter(x_c[:, 0], x_c[:, 1], marker='o', label='cluster {}'.format(cluster+1), 
+                        c=[color for _ in range(x_c.shape[0])])
         ax.set_xlabel('dim1')
         ax.set_ylabel('dim2')
         ax.set_title('dimension reduction of {} clusters, ch_score:{}'\
                     .format(self.args.n_clusters, ch))
+        ax.legend()
         self.writer.add_figure('clusters visualization', 
                                 fig, 
                                 global_step=None, 
