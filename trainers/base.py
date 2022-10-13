@@ -31,13 +31,12 @@ class AbstractTrainer(metaclass=ABCMeta):
 
         self.num_epochs = args.num_epochs
         self.metric_ks = args.metric_ks
-        self.loss_names = args.loss_names
         self.best_metric = args.best_metric
 
         self.export_root = export_root
-        self.writer, self.train_loggers, self.val_loggers = self._create_loggers()
+        self.writer, self.train_loggers, self.val_loggers, self.pretrain_loggers = self._create_loggers()
         self.add_extra_loggers()
-        self.logger_service = LoggerService(self.train_loggers, self.val_loggers)
+        self.logger_service = LoggerService(self.train_loggers, self.val_loggers, self.pretrain_loggers)
         self.log_period_as_iter = args.log_period_as_iter
 
     @abstractmethod
@@ -123,8 +122,11 @@ class AbstractTrainer(metaclass=ABCMeta):
                     'accum_iter': accum_iter,
                 }
                 log_data.update(average_meter_set.averages())
-                self.log_extra_train_info(log_data)
-                self.logger_service.log_train(log_data)
+                if not pretrain:
+                    self.log_extra_train_info(log_data)
+                    self.logger_service.log_train(log_data)
+                else:
+                    self.logger_service.log_pretrain(log_data)
 
         return accum_iter
 
@@ -201,17 +203,13 @@ class AbstractTrainer(metaclass=ABCMeta):
         root = Path(self.export_root)
         writer = SummaryWriter(root.joinpath('logs'))
         model_checkpoint = root.joinpath('models')
-
-        # train_loggers = [
-        #     MetricGraphPrinter(writer, key='epoch', graph_name='Epoch', group_name='Train'),
-        #     MetricGraphPrinter(writer, key='loss', graph_name='Loss', group_name='Train'),
-        # ]
-        # add other losses's loggers
-        # need args.losse_names
         train_loggers = [
             MetricGraphPrinter(writer, key='epoch', graph_name='Epoch', group_name='Train'),
         ]
-        for loss_name in self.loss_names:
+        # add other losses's loggers
+        # need args.losse_names
+        # need to define a function in specific class, see bert_ls
+        for loss_name in self.loss_names():
             train_loggers.append(
                 MetricGraphPrinter(writer, key=loss_name, graph_name=loss_name, group_name='Train'))
 
@@ -223,7 +221,20 @@ class AbstractTrainer(metaclass=ABCMeta):
                 MetricGraphPrinter(writer, key='Recall@%d' % k, graph_name='Recall@%d' % k, group_name='Validation'))
         val_loggers.append(RecentModelLogger(model_checkpoint))
         val_loggers.append(BestModelLogger(model_checkpoint, metric_key=self.best_metric))
-        return writer, train_loggers, val_loggers
+
+        pretrain_loggers = None
+        if self.args.num_epochs_pretrain > 0:
+            pretrain_loggers = [
+                MetricGraphPrinter(writer, key='epoch', graph_name='Epoch', group_name='Train'),
+            ]
+            # add other losses's loggers
+            # need args.losse_names
+            # need to define a function in specific class, see bert_ls
+            for loss_name in self.pretrain_loss_names():
+                pretrain_loggers.append(
+                    MetricGraphPrinter(writer, key=loss_name, graph_name=loss_name, group_name='Pretrain'))
+
+        return writer, train_loggers, val_loggers, pretrain_loggers
 
     def _create_state_dict(self):
         return {

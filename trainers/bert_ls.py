@@ -24,6 +24,12 @@ class BERTLSTrainer(AbstractTrainer):
         root = Path(self.export_root)
         self.writer = SummaryWriter(root.joinpath('logs'))
 
+    def loss_names(self):
+        return ['loss', 'bert_loss', 'rec_loss', 'cluster_loss']
+
+    def pretrain_loss_names(self):
+        return ['loss', 'bert_loss', 'rec_loss']
+
     @classmethod
     def code(cls):
         return 'bert_ls'
@@ -156,7 +162,8 @@ class BERTLSTrainer(AbstractTrainer):
         ax.scatter(x[:, 0], x[:, 1], marker='o', c=y, cmap='coolwarm')
         ax.set_xlabel('dim1')
         ax.set_ylabel('dim2')
-        ax.set_title('dimension reduction of clusters, ch_score:{}'.format(ch))
+        ax.set_title('dimension reduction of {} clusters, ch_score:{}'\
+                    .format(self.args.n_clusters, ch))
         self.writer.add_figure('clusters visualization', 
                                 fig, 
                                 global_step=None, 
