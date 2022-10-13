@@ -130,7 +130,7 @@ class AbstractTrainer(metaclass=ABCMeta):
 
         return accum_iter
 
-    def validate(self, epoch, accum_iter, pretrain=False):
+    def validate(self, epoch, accum_iter):
         self.model.eval()
 
         average_meter_set = AverageMeterSet()
@@ -157,11 +157,8 @@ class AbstractTrainer(metaclass=ABCMeta):
                 'accum_iter': accum_iter,
             }
             log_data.update(average_meter_set.averages())
-            if not pretrain:
-                self.log_extra_val_info(log_data)
-                self.logger_service.log_val(log_data)
-            else:
-                self.logger_service.log_preval(log_data)
+            self.log_extra_val_info(log_data)
+            self.logger_service.log_val(log_data)
 
     def test(self):
         print('Test best model with test set!')

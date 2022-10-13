@@ -34,9 +34,9 @@ class AbstractTrainer(metaclass=ABCMeta):
         self.best_metric = args.best_metric
 
         self.export_root = export_root
-        self.writer, self.train_loggers, self.val_loggers, self.pretrain_loggers, self.preval_loggers = self._create_loggers()
+        self.writer, self.train_loggers, self.val_loggers, self.pretrain_loggers = self._create_loggers()
         self.add_extra_loggers()
-        self.logger_service = LoggerService(self.train_loggers, self.val_loggers, self.pretrain_loggers, self.preval_loggers)
+        self.logger_service = LoggerService(self.train_loggers, self.val_loggers, self.pretrain_loggers)
         self.log_period_as_iter = args.log_period_as_iter
 
     @abstractmethod
@@ -130,7 +130,7 @@ class AbstractTrainer(metaclass=ABCMeta):
 
         return accum_iter
 
-    def validate(self, epoch, accum_iter, pretrain=False):
+    def validate(self, epoch, accum_iter):
         self.model.eval()
 
         average_meter_set = AverageMeterSet()
@@ -157,11 +157,8 @@ class AbstractTrainer(metaclass=ABCMeta):
                 'accum_iter': accum_iter,
             }
             log_data.update(average_meter_set.averages())
-            if not pretrain:
-                self.log_extra_val_info(log_data)
-                self.logger_service.log_val(log_data)
-            else:
-                self.logger_service.log_preval(log_data)
+            self.log_extra_val_info(log_data)
+            self.logger_service.log_val(log_data)
 
     def test(self):
         print('Test best model with test set!')
@@ -237,16 +234,7 @@ class AbstractTrainer(metaclass=ABCMeta):
                 pretrain_loggers.append(
                     MetricGraphPrinter(writer, key=loss_name, graph_name=loss_name, group_name='Pretrain'))
 
-        preval_loggers = []
-        for k in self.metric_ks:
-            preval_loggers.append(
-                MetricGraphPrinter(writer, key='NDCG@%d' % k, graph_name='NDCG@%d' % k, group_name='Prevalidation'))
-            preval_loggers.append(
-                MetricGraphPrinter(writer, key='Recall@%d' % k, graph_name='Recall@%d' % k, group_name='Prevalidation'))
-        preval_loggers.append(RecentModelLogger(model_checkpoint))
-        preval_loggers.append(BestModelLogger(model_checkpoint, metric_key=self.best_metric))
-
-        return writer, train_loggers, val_loggers, pretrain_loggers, preval_loggers
+        return writer, train_loggers, val_loggers, pretrain_loggers
 
     def _create_state_dict(self):
         return {

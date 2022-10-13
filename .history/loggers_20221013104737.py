@@ -36,10 +36,9 @@ class LoggerService(object):
     def log_pretrain(self, log_data):
         for logger in self.pretrain_loggers:
             logger.log(**log_data)
-
+            
     def log_preval(self, log_data):
-        for logger in self.preval_loggers:
-            logger.log(**log_data)
+        
 
 class AbstractBaseLogger(metaclass=ABCMeta):
     @abstractmethod
