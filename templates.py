@@ -17,9 +17,9 @@ def set_template(args):
         # delete dir Data/preprocessed/ouladxxx to make this option work
         args.drop_dup = False 
 
-        args.n_clusters = 8
+        args.n_clusters = 10
         args.num_epochs_pretrain = 1
-        args.num_epochs = 5 # test on autoDL
+        args.num_epochs = 20 # test on autoDL
 
 
         args.dataset_code = 'oulad'

@@ -45,7 +45,7 @@ class BERTLSTrainer(AbstractTrainer):
     
     def train(self):
         accum_iter = 0
-        self.validate(0, accum_iter)
+        self.validate(0, accum_iter, pretrain=True)
         if self.num_epochs_pretrain > 0:
             print("===Start Pretraining===")
             for epoch in range(self.num_epochs_pretrain):
